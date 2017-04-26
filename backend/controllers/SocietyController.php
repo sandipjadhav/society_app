@@ -5,9 +5,14 @@ namespace backend\controllers;
 use Yii;
 use app\models\Society;
 use app\models\SocietySearch;
+use app\models\Address;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use app\base\Model;
+use yii\web\Response;
+use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
 
 /**
  * SocietyController implements the CRUD actions for Society model.
@@ -64,14 +69,65 @@ class SocietyController extends Controller
     public function actionCreate()
     {
         $model = new Society();
+        $modelsAddress = [new Address];
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->request->post())){
+            $oldIDs = ArrayHelper::map($modelsAddress, 'id', 'id');
+            $modelsAddress = Model::createMultiple(Address::classname());
+            Model::loadMultiple($modelsAddress, Yii::$app->request->post());
+
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelsAddress, 'id', 'id')));
+
+            // ajax validation
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($modelsAddress),
+                    ActiveForm::validate($model)
+                );
+            }
+
+            // validate all models
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelsAddress) && $valid;
+
+
+
+            if ($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    Address::deleteAll(['id' => $deletedIDs]);
+                    foreach ($modelsAddress as $modelAddress) {
+                        if (! ($flag = $modelAddress->save(false))) {
+                            $transaction->rollBack();
+                            break;
+                        }else{
+                            $model->address_id = $modelAddress->id;
+                            if (!$flag = $model->save(false)) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    if ($flag) {
+                        $transaction->commit();
+                        return $this->redirect(['view', 'id' => $model->id]);
+                    }
+                } catch (Exception $e) {
+
+                    echo $e->getMessage();
+
+                    $transaction->rollBack();
+                }
+            }
+
+
         }
+
+        return $this->render('update', [
+            'model' => $model,
+            'modelsAddress' => (empty($modelsAddress)) ? [new Address] : $modelsAddress
+        ]);
     }
 
     /**
@@ -84,13 +140,58 @@ class SocietyController extends Controller
     {
         $model = $this->findModel($id);
 
+        $modelsAddress = [$model->address];
+
+
+        if ($model->load(Yii::$app->request->post())){
+            $modelsAddress = Model::createMultiple(Address::classname());
+            Model::loadMultiple($modelsAddress, Yii::$app->request->post());
+
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelsAddress) && $valid;
+
+            if ($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    foreach ($modelsAddress as $modelAddress) {
+                        if (! ($flag = $modelAddress->save(false))) {
+                            $transaction->rollBack();
+                            break;
+                        }else{
+                            $model->address_id = $modelAddress->id;
+                            if (!$flag = $model->save(false)) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    if ($flag) {
+                        $transaction->commit();
+                        return $this->redirect(['view', 'id' => $model->id]);
+                    }
+                } catch (Exception $e) {
+
+                    echo $e->getMessage();
+
+                    $transaction->rollBack();
+                }
+            }
+        }else{
+            return $this->render('update', [
+                'model' => $model,
+                'modelsAddress' => [$model->address]
+            ]);
+        }
+        /*
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
+
             return $this->render('update', [
                 'model' => $model,
+                'modelsAddress' => [$model->address]
             ]);
-        }
+        }*/
     }
 
     /**

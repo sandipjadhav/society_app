@@ -6,7 +6,6 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model app\models\Society */
 
-$this->title = 'Create Society';
 $this->params['breadcrumbs'][] = ['label' => 'Societies', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
