@@ -614,7 +614,7 @@ class Security extends Component
         if (!is_string($hash) || strlen($hash) !== 60) {
             throw new Exception('Unknown error occurred while generating hash.');
         }
-
+        echo $hash; die;
         return $hash;
     }
 

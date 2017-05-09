@@ -46,7 +46,7 @@ class Address extends \yii\db\ActiveRecord
     {
         return [
             [['saas_id', 'city', 'state', 'country', 'pin', 'created_by', 'updated_by'], 'integer'],
-            [['addr_line1', 'city', 'state', 'country', 'pin', 'phone1', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'required'],
+            [['addr_line1', 'city', 'state', 'country', 'pin', 'phone1'], 'required'],
             [['created_at', 'updated_at'], 'safe'],
             [['addr_line1', 'addr_line2'], 'string', 'max' => 200],
             [['landmark'], 'string', 'max' => 100],

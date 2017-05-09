@@ -35,7 +35,7 @@ class Society extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'name', 'address_id', 'reg_no', 'builder_id', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'required'],
+            [['name', 'reg_no'], 'required'],
             [['id', 'address_id', 'builder_id', 'created_by', 'updated_by'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 200],
