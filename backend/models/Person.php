@@ -3,7 +3,6 @@
 namespace app\models;
 
 use Yii;
-use common\models\User;
 
 /**
  * This is the model class for table "person".
@@ -13,6 +12,7 @@ use common\models\User;
  * @property string $first_name
  * @property string $surname
  * @property string $title
+ * @property string $gender
  * @property string $photo
  * @property string $adhar_card
  * @property string $pan_card
@@ -49,19 +49,17 @@ class Person extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['saas_id', 'first_name', 'surname', 'address2_id', 'created_by', 'created_at', 'updated_by', 'updated_at'], 'required'],
+            [['first_name', 'surname'], 'required'],
             [['saas_id', 'address1_id', 'address2_id', 'address_verified', 'created_by', 'updated_by'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['first_name', 'surname'], 'string', 'max' => 100],
-            [['title'], 'string', 'max' => 6],
+            [['title', 'gender'], 'string', 'max' => 6],
             [['photo'], 'string', 'max' => 150],
             [['adhar_card'], 'string', 'max' => 20],
             [['pan_card'], 'string', 'max' => 10],
             [['education', 'occupation'], 'string', 'max' => 50],
             [['address1_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::className(), 'targetAttribute' => ['address1_id' => 'id']],
-            [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
             [['address2_id'], 'exist', 'skipOnError' => true, 'targetClass' => Address::className(), 'targetAttribute' => ['address2_id' => 'id']],
-            [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
         ];
     }
 
@@ -76,6 +74,7 @@ class Person extends \yii\db\ActiveRecord
             'first_name' => 'First Name',
             'surname' => 'Surname',
             'title' => 'Title',
+            'gender' => 'Gender',
             'photo' => 'Photo',
             'adhar_card' => 'Adhar Card',
             'pan_card' => 'Pan Card',
@@ -137,14 +136,5 @@ class Person extends \yii\db\ActiveRecord
     public function getRentalRecords()
     {
         return $this->hasMany(RentalRecord::className(), ['tenent_id' => 'id']);
-    }
-
-    /**
-     * @inheritdoc
-     * @return PersonQuery the active query used by this AR class.
-     */
-    public static function find()
-    {
-        return new PersonQuery(get_called_class());
     }
 }

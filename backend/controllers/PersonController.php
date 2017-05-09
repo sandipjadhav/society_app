@@ -2,6 +2,7 @@
 
 namespace backend\controllers;
 
+use app\models\Address;
 use Yii;
 use app\models\Person;
 use app\models\PersonSearch;
@@ -64,12 +65,15 @@ class PersonController extends Controller
     public function actionCreate()
     {
         $model = new Person();
-
+        $address1 = new Address();
+        $address2 = new Address();
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
+                'address1' => $address1,
+                'address2' => $address2
             ]);
         }
     }
@@ -83,12 +87,16 @@ class PersonController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+        $address1 = $model->address1;
+        $address1 = $model->address2;
+        $address2 = new Address();
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
                 'model' => $model,
+                'address1' => $address1,
+                'address2' => $address2
             ]);
         }
     }
